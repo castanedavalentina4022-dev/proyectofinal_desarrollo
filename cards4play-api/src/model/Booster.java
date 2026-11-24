@@ -11,7 +11,7 @@ public class Booster extends Producto {
 
     private List<Carta> cartas;
     private boolean abierto;
-    private String propietarioId;   // null = disponible
+    private String propietarioId;   
 
     public Booster(String id, String nombre, double precioUSD, List<Carta> cartasRegistradas) {
         super(id, nombre, precioUSD, 1, TipoProducto.BOOSTER);
