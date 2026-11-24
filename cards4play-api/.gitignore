@@ -1,0 +1,11 @@
+# Maven
+target/
+# IntelliJ
+.idea/
+*.iml
+out/
+# Datos generados al ejecutar
+data/*.json
+# Sistema
+.DS_Store
+Thumbs.db
