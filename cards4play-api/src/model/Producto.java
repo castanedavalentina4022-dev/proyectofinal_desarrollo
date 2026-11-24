@@ -8,7 +8,7 @@ import service.TasaCambioService.Tasa;
 public class Producto {
 
 
-    private static final long VIGENCIA_MS = 60_000;          // se vuelve a consultar cada minuto
+    private static final long VIGENCIA_MS = 60_000;          
     private static final TasaCambioService servicioTasa = new TasaCambioService();
     private static Tasa tasaActual;
     private static long ultimaConsulta = 0;
