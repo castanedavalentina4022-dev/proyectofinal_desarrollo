@@ -19,10 +19,7 @@ import java.util.List;
 import java.util.Map;
 import static spark.Spark.*;
 
-/**
- * Controlador principal de la API: configura el servidor, la autenticación,
- * el manejo de errores y registra TODAS las rutas de la tienda.
- */
+
 public class TiendaApi {
 
     private final Tienda tienda;
@@ -41,10 +38,6 @@ public class TiendaApi {
         rutasCompras();
         System.out.println("API corriendo en http://localhost:" + puerto);
     }
-
-    // ---------------------------------------------------------------------
-    // Configuración general (filtros, health, errores)
-    // ---------------------------------------------------------------------
 
     private void configurar() {
 
@@ -75,9 +68,6 @@ public class TiendaApi {
         });
     }
 
-    // ---------------------------------------------------------------------
-    // Rutas: usuarios / clientes
-    // ---------------------------------------------------------------------
 
     private void rutasUsuarios() {
 
@@ -102,9 +92,6 @@ public class TiendaApi {
         });
     }
 
-    // ---------------------------------------------------------------------
-    // Rutas: productos
-    // ---------------------------------------------------------------------
 
     private void rutasProductos() {
 
@@ -151,10 +138,7 @@ public class TiendaApi {
         });
     }
 
-    // ---------------------------------------------------------------------
-    // Rutas: boosters
-    // ---------------------------------------------------------------------
-
+ 
     private void rutasBoosters() {
 
         post("/boosters", (req, res) -> {
@@ -186,9 +170,6 @@ public class TiendaApi {
         });
     }
 
-    // ---------------------------------------------------------------------
-    // Rutas: torneos
-    // ---------------------------------------------------------------------
 
     private void rutasTorneos() {
 
@@ -225,10 +206,6 @@ public class TiendaApi {
             return json(Vistas.torneo(t, false));
         });
     }
-
-    // ---------------------------------------------------------------------
-    // Rutas: compras
-    // ---------------------------------------------------------------------
 
     private void rutasCompras() {
 
@@ -267,10 +244,6 @@ public class TiendaApi {
         return lista;
     }
 
-    // ---------------------------------------------------------------------
-    // Autenticación
-    // ---------------------------------------------------------------------
-
     private Usuario autenticar(String cabecera) {
         if (cabecera == null || !cabecera.startsWith("Basic "))
             throw TiendaException.noAutenticado("Falta la autenticación (Basic Auth)");
@@ -288,9 +261,6 @@ public class TiendaApi {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Utilidades (antes en BaseController)
-    // ---------------------------------------------------------------------
 
     private String json(Object objeto) { return gson.toJson(objeto); }
 
