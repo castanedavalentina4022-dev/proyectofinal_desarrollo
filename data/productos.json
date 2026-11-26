@@ -1,0 +1,10 @@
+[
+  {
+    "rareza": "N",
+    "id": "CAR-1",
+    "nombre": "Pikachu",
+    "precioUSD": 23.5,
+    "stock": 10,
+    "tipo": "CARTA"
+  }
+]

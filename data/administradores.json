@@ -1,0 +1,12 @@
+[
+  {
+    "torneosCreadosIds": [],
+    "productosCreadosIds": [
+      "CAR-1"
+    ],
+    "id": "ADM-1",
+    "username": "admin",
+    "password": "admin123",
+    "rol": "ADMIN"
+  }
+]
