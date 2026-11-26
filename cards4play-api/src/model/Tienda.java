@@ -11,6 +11,11 @@ public class Tienda {
 
     public record ItemCompra(String productoId, int cantidad) {}
 
+
+    public record Cambio(String campo, Object anterior, Object nuevo) {}
+
+    public record ResultadoActualizacion(Producto producto, List<Cambio> cambios) {}
+
     private final Persistencia persistencia;
     private final List<Administrador> administradores;
     private final List<Cliente> clientes;
@@ -120,18 +125,56 @@ public class Tienda {
         return p;
     }
 
-    public synchronized Producto actualizarProducto(String id, String nombre, Double precioUSD,
-                                                    Integer stock, Rareza rareza) {
+    public synchronized ResultadoActualizacion actualizarProducto(String id, String nombre, Double precioUSD,
+                                                                  Integer stock, Rareza rareza) {
         Producto p = buscarProducto(id);
         if (p instanceof Booster && (stock != null || rareza != null))
             throw TiendaException.datosInvalidos("Un booster solo permite cambiar nombre y precio");
         if (rareza != null && !(p instanceof Carta))
             throw TiendaException.datosInvalidos("Solo las cartas tienen rareza");
 
-        if (nombre != null) p.setNombre(nombre);
-        if (precioUSD != null) p.setPrecioUSD(precioUSD);
-        if (stock != null) p.setStock(stock);
-        if (rareza != null) ((Carta) p).setRareza(rareza);
+        // valores actuales, para informar qué cambió y para deshacer si algo falla a mitad
+        String nombreAnt = p.getNombre();
+        double precioAnt = p.getPrecioUSD();
+        int stockAnt = p.getStock();
+        Rareza rarezaAnt = p instanceof Carta ? ((Carta) p).getRareza() : null;
+
+        List<Cambio> cambios = new ArrayList<>();
+        try {
+            if (nombre != null && !nombre.trim().equals(nombreAnt)) {
+                p.setNombre(nombre);
+                cambios.add(new Cambio("nombre", nombreAnt, p.getNombre()));
+            }
+            if (precioUSD != null && precioUSD.doubleValue() != precioAnt) {
+                p.setPrecioUSD(precioUSD);
+                cambios.add(new Cambio("precioUSD", precioAnt, p.getPrecioUSD()));
+            }
+            if (stock != null && stock.intValue() != stockAnt) {
+                p.setStock(stock);
+                cambios.add(new Cambio("stock", stockAnt, p.getStock()));
+            }
+            if (rareza != null && rareza != rarezaAnt) {
+                ((Carta) p).setRareza(rareza);
+                cambios.add(new Cambio("rareza", rarezaAnt.getCodigo(), rareza.getCodigo()));
+            }
+        } catch (RuntimeException e) {
+            p.setNombre(nombreAnt);
+            p.setPrecioUSD(precioAnt);
+            p.setStock(stockAnt);
+            if (p instanceof Carta) ((Carta) p).setRareza(rarezaAnt);
+            throw e;
+        }
+
+        if (!cambios.isEmpty()) guardar();
+        return new ResultadoActualizacion(p, cambios);
+    }
+
+    public synchronized Producto eliminarProducto(String id) {
+        Producto p = buscarProducto(id);
+        if (p instanceof Booster && !((Booster) p).estaDisponible())
+            throw TiendaException.conflicto("El booster " + id + " ya fue vendido y no se puede eliminar");
+        inventario.eliminar(p);
+        for (Administrador a : administradores) a.getProductosCreadosIds().remove(id);
         guardar();
         return p;
     }

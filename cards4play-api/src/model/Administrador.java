@@ -15,7 +15,7 @@ public class Administrador extends Usuario {
     }
 
     public Torneo crearTorneo(String id, String nombre, LocalDate fecha, int maxParticipantes) {
-        Torneo torneo = new Torneo(id, nombre, fecha, maxParticipantes); // valida los datos
+        Torneo torneo = new Torneo(id, nombre, fecha, maxParticipantes);
         torneosCreadosIds.add(torneo.getId());
         return torneo;
     }

@@ -42,7 +42,7 @@ public class Vistas {
     }
 
     public static List<Map<String, Object>> productos(List<? extends Producto> lista, boolean admin) {
-        Tasa tasa = Producto.tasaVigente();      // una sola consulta para toda la lista
+        Tasa tasa = Producto.tasaVigente();      
         List<Map<String, Object>> r = new ArrayList<>();
         for (Producto p : lista) r.add(producto(p, admin, tasa));
         return r;

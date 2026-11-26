@@ -15,14 +15,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import static spark.Spark.*;
 
-/**
- * Controlador principal de la API: configura el servidor, la autenticación,
- * el manejo de errores y registra TODAS las rutas de la tienda.
- */
+
 public class TiendaApi {
 
     private final Tienda tienda;
@@ -41,10 +39,6 @@ public class TiendaApi {
         rutasCompras();
         System.out.println("API corriendo en http://localhost:" + puerto);
     }
-
-    // ---------------------------------------------------------------------
-    // Configuración general (filtros, health, errores)
-    // ---------------------------------------------------------------------
 
     private void configurar() {
 
@@ -75,10 +69,6 @@ public class TiendaApi {
         });
     }
 
-    // ---------------------------------------------------------------------
-    // Rutas: usuarios / clientes
-    // ---------------------------------------------------------------------
-
     private void rutasUsuarios() {
 
         post("/clientes", (req, res) -> {
@@ -102,9 +92,6 @@ public class TiendaApi {
         });
     }
 
-    // ---------------------------------------------------------------------
-    // Rutas: productos
-    // ---------------------------------------------------------------------
 
     private void rutasProductos() {
 
@@ -142,18 +129,39 @@ public class TiendaApi {
             admin(req);
             JsonObject body = cuerpo(req);
             String r = textoOpcional(body, "rareza");
-            Producto p = tienda.actualizarProducto(req.params(":id"),
+            Tienda.ResultadoActualizacion resultado = tienda.actualizarProducto(req.params(":id"),
                     textoOpcional(body, "nombre"),
                     numeroOpcional(body, "precioUSD"),
                     enteroOpcional(body, "stock"),
                     r == null ? null : Rareza.desdeTexto(r));
-            return json(Vistas.producto(p, true, Producto.tasaVigente()));
+
+            List<Map<String, Object>> cambios = new ArrayList<>();
+            for (Tienda.Cambio c : resultado.cambios()) {
+                Map<String, Object> m = new LinkedHashMap<>();
+                m.put("campo", c.campo());
+                m.put("valorAnterior", c.anterior());
+                m.put("valorNuevo", c.nuevo());
+                cambios.add(m);
+            }
+            Map<String, Object> respuesta = new LinkedHashMap<>();
+            respuesta.put("mensaje", cambios.isEmpty()
+                    ? "No hubo cambios: los valores enviados ya eran los actuales"
+                    : "Producto actualizado (" + cambios.size() + " campo(s) modificado(s))");
+            respuesta.put("cambios", cambios);
+            respuesta.put("producto", Vistas.producto(resultado.producto(), true, Producto.tasaVigente()));
+            return json(respuesta);
+        });
+
+        delete("/productos/:id", (req, res) -> {
+            admin(req);
+            Producto eliminado = tienda.eliminarProducto(req.params(":id"));
+            Map<String, Object> respuesta = new LinkedHashMap<>();
+            respuesta.put("mensaje", "Producto eliminado: " + eliminado.getId());
+            respuesta.put("producto", Vistas.producto(eliminado, true, Producto.tasaVigente()));
+            return json(respuesta);
         });
     }
 
-    // ---------------------------------------------------------------------
-    // Rutas: boosters
-    // ---------------------------------------------------------------------
 
     private void rutasBoosters() {
 
@@ -186,9 +194,6 @@ public class TiendaApi {
         });
     }
 
-    // ---------------------------------------------------------------------
-    // Rutas: torneos
-    // ---------------------------------------------------------------------
 
     private void rutasTorneos() {
 
@@ -226,9 +231,6 @@ public class TiendaApi {
         });
     }
 
-    // ---------------------------------------------------------------------
-    // Rutas: compras
-    // ---------------------------------------------------------------------
 
     private void rutasCompras() {
 
@@ -267,9 +269,6 @@ public class TiendaApi {
         return lista;
     }
 
-    // ---------------------------------------------------------------------
-    // Autenticación
-    // ---------------------------------------------------------------------
 
     private Usuario autenticar(String cabecera) {
         if (cabecera == null || !cabecera.startsWith("Basic "))
@@ -288,9 +287,6 @@ public class TiendaApi {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Utilidades (antes en BaseController)
-    // ---------------------------------------------------------------------
 
     private String json(Object objeto) { return gson.toJson(objeto); }
 

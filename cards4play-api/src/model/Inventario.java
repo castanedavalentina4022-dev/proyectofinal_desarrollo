@@ -11,6 +11,8 @@ public class Inventario {
 
     public void agregar(Producto p) { productos.add(p); }
 
+    public boolean eliminar(Producto p) { return productos.remove(p); }
+
     public Producto buscarPorId(String id) {
         for (Producto p : productos) if (p.getId().equals(id)) return p;
         return null;
